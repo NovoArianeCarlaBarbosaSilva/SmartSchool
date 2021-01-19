@@ -1,0 +1,61 @@
+<div *ngIf="profSelecionado.nome" >
+    <app-titulo [titulo]="'Professor: ' + profSelecionado.id" ></app-titulo>
+    
+    <form>
+        <div class="form-group">
+            <label for="formGroupExampleInput">Nome</label>
+            <input type="text" value="{{ profSelecionado.nome }}" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="formGroupExampleInput2">Disciplina</label>
+            <input type="text" value="{{ profSelecionado.disciplina }}" class="form-control">
+        </div>
+    </form>
+    
+    <div class="row">
+        <div class="col-sm-11">
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-warning" (click)="voltar()" >Voltar</button>
+        </div>
+    </div>
+</div>
+<div *ngIf="!profSelecionado.nome">
+    <app-titulo [titulo]="titulo" ></app-titulo>
+    <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Disciplina</th>
+            <th scope="col">Opções</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let prof of professores">
+            <th scope="row">{{ prof.id }}</th>
+            <td>{{ prof.nome }}</td>
+            <td>{{ prof.disciplina }}</td>
+            <td>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-outline-success" (click)="profSelect(prof)">Detalhe</button>
+                <button class="btn btn-sm btn-outline-primary" (click)="openModal(template)">Alunos</button>
+                <button class="btn btn-sm btn-outline-danger">Desativar</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+    </table>
+</div>
+
+<ng-template #template>
+  <div class="modal-body">
+    <app-alunos></app-alunos>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn pull-right" aria-label="Close" (click)="modalRef.hide()">
+      Fechar
+    </button>
+    
+  </div>
+</ng-template>
