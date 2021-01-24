@@ -122,7 +122,7 @@ namespace SmartSchool_WebAPI.Controllers
 
                 if(await _repo.SaveChangesAsync())
                 {
-                    return Ok("Excluído com sucesso!");
+                    return Ok(new { message = "Excluído com sucesso!" });
                 }
             }
             catch (Exception ex)

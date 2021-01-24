@@ -1,27 +1,32 @@
-<div *ngIf="profSelecionado.nome" >
-    <app-titulo [titulo]="'Professor: ' + profSelecionado.id" ></app-titulo>
+<div *ngIf="profSelecionado" >
+  
+    <app-titulo [titulo]="(profSelecionado.id === 0 ? 'Novo Profesor' : 'Professor: ' + profSelecionado.id)" ></app-titulo>
     
-    <form>
+    <form [formGroup]="professorForm" (submit)="professorSubmit()">
         <div class="form-group">
             <label for="formGroupExampleInput">Nome</label>
-            <input type="text" value="{{ profSelecionado.nome }}" class="form-control">
+            <input type="text" formControlName="nome" class="form-control">
         </div>
         <div class="form-group">
             <label for="formGroupExampleInput2">Disciplina</label>
-            <input type="text" value="{{ profSelecionado.disciplina }}" class="form-control">
+            <input type="text" formControlName="disciplina" class="form-control">
         </div>
+        <div class="row">
+            <div class="col-sm-10">
+            </div>
+            <div class="col-sm-1">
+              <button class="btn btn-success" [disabled]="!professorForm.valid">Salvar</button>
+            </div>
+            <div class="col-sm-1">
+                <button class="btn btn-warning" (click)="voltar()" >Voltar</button>
+            </div>
+        </div> 
     </form>
-    
-    <div class="row">
-        <div class="col-sm-11">
-        </div>
-        <div class="col-sm-1">
-            <button class="btn btn-warning" (click)="voltar()" >Voltar</button>
-        </div>
-    </div>
 </div>
-<div *ngIf="!profSelecionado.nome">
-    <app-titulo [titulo]="titulo" ></app-titulo>
+<div *ngIf="!profSelecionado">
+    <app-titulo [titulo]="titulo" >
+      <button class="btn btn-primary" (click)="professorNovo()">Cadastrar Professor</button>
+    </app-titulo>
     <table class="table table-hover">
         <thead>
           <tr>
@@ -35,12 +40,12 @@
           <tr *ngFor="let prof of professores">
             <th scope="row">{{ prof.id }}</th>
             <td>{{ prof.nome }}</td>
-            <td>{{ prof.disciplina }}</td>
+            <td>{{ prof.disciplinas[0] ? prof.disciplinas[0].nome : '' }}</td>
             <td>
               <div class="btn-group">
                 <button class="btn btn-sm btn-outline-success" (click)="profSelect(prof)">Detalhe</button>
                 <button class="btn btn-sm btn-outline-primary" (click)="openModal(template)">Alunos</button>
-                <button class="btn btn-sm btn-outline-danger">Desativar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deletarProfessor(prof.id)">Excluir</button>
               </div>
             </td>
           </tr>

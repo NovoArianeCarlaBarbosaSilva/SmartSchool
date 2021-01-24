@@ -1,44 +1,93 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { Professor } from '../models/Professor';
+import { ProfessorService } from './professor.service';
 
 @Component({
   selector: 'app-professores',
   templateUrl: './professores.component.html',
-  styleUrls: ['./professores.component.scss']
+  styleUrls: ['./professores.component.css']
 })
 export class ProfessoresComponent implements OnInit {
 
   modalRef: BsModalRef;
   titulo = 'Professores';
-  profSelecionado: Professor = new Professor();
+  profSelecionado: Professor = null;
+  professorForm: FormGroup;
 
-  public professores: Array<Professor> = [
-    { id: 1, nome: 'Hegler Kelser', disciplina: 'Matemática' },
-    { id: 2, nome: 'Raquel Mini', disciplina: 'Física' },
-    { id: 3, nome: 'Max do Val', disciplina: 'Português' },
-    { id: 4, nome: 'Mark Juno', disciplina: 'Inglês' },
-    { id: 5, nome: 'Marco Aurélio', disciplina: 'Programação' },
-  ]
+  public professores: Array<Professor> = []
 
-  constructor(private modalService: BsModalService) {
-    
+  constructor(private fb: FormBuilder, private modalService: BsModalService, private professorService: ProfessorService) {
+    this.professorForm = this.fb.group({
+      id: [''],
+      nome: ['', Validators.required],
+      disciplina: ['', Validators.required]
+    });
    }
 
   ngOnInit() {
+    this.carregarProfessores();
   }
 
   openModal(template: TemplateRef<any>) {
     this.modalRef = this.modalService.show(template);
   }
 
-  profSelect(prof: Professor) {
-    this.profSelecionado = prof;
+  profSelect(professor: Professor) {
+    this.profSelecionado = professor;
+    this.professorForm.patchValue(professor);
+  }
+
+  professorNovo() {
+    this.profSelecionado = new Professor();
+    this.professorForm.patchValue(this.profSelecionado);
   }
 
   voltar() {
-    this.profSelecionado = new Professor();
+    this.profSelecionado = null;
+  }
+
+  carregarProfessores(){
+    this.professorService.getAll().subscribe(
+      (professores: Professor[]) => { this.professores = professores; console.log(this.professores) },
+      (erro: any) => { console.error(erro); }
+    );
+  }
+
+  professorSubmit(){
+    console.log(this.professorForm.value);
+    this.salvarProfessor(this.professorForm.value);
+  }
+
+  salvarProfessor(professor: Professor){
+    if(professor.id === 0) {
+      this.professorService.post(professor).subscribe(
+        (retorno) => { 
+          console.log(retorno); 
+          this.carregarProfessores();
+        },
+        (erro: any) => { console.error(erro) }
+      );
+    } else {
+      this.professorService.put(professor.id, professor).subscribe(
+        (retorno) => { 
+          console.log(retorno); 
+          this.carregarProfessores();
+        },
+        (erro: any) => { console.error(erro) }
+      );
+    }
+  }
+
+  deletarProfessor(id: number) {
+    this.professorService.delete(id).subscribe(
+      (model: any) => { 
+        console.log(model); 
+        this.carregarProfessores();
+      },
+      (erro: any) => { console.error(erro); this.carregarProfessores(); }
+    );
   }
 
 }

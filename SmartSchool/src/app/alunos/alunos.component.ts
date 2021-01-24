@@ -1,9 +1,11 @@
+import { nullSafeIsEquivalent } from '@angular/compiler/src/output/output_ast';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 
 import { Aluno } from '../models/Aluno';
+import { AlunoService } from './aluno.service';
 
 @Component({
   selector: 'app-alunos',
@@ -12,38 +14,40 @@ import { Aluno } from '../models/Aluno';
 })
 export class AlunosComponent implements OnInit {
   
-  modalRef: BsModalRef;
+  modalRef: BsModalRef = null;
   alunoForm: FormGroup;
   titulo = 'Alunos';
-  alunoSelecionado: Aluno = new Aluno();
+  alunoSelecionado: Aluno = null;
 
-  alunos: Array<Aluno> = [
-    {id: 1,nome: 'Marta', sobrenome: 'Rocha Andrade', telefone: '9107-0123' },
-    {id: 2,nome: 'Paula', sobrenome: 'Burlamachi', telefone: '3332-5555' },
-    {id: 3,nome: 'Jennifer', sobrenome: 'Lopes', telefone: '2345-6789' },
-    {id: 4,nome: 'Paulo', sobrenome: 'Cabral', telefone: '3332-9999' },
-    {id: 5,nome: 'Juarez', sobrenome: 'Amaral', telefone: '98768-9876' },
-    {id: 6,nome: 'Gustavo', sobrenome: 'Pontes', telefone: '99999-9999' },
-    {id: 7,nome: 'Pedro', sobrenome: 'Paulo Rangel', telefone: '91919-1919' },
-  ];
+  alunos: Array<Aluno> = [];
 
-  constructor(private fb: FormBuilder, private modalService: BsModalService) {
+  constructor(private fb: FormBuilder, private modalService: BsModalService, private alunoService: AlunoService) {
     this.alunoForm = this.fb.group({
-      nome: [''],
-      sobrenome: [''],
-      telefone: ['']
+      id: [''],
+      nome: ['', Validators.required],
+      sobrenome: ['', Validators.required],
+      telefone: ['', Validators.required]
     });
   }
   
   ngOnInit(): void {
+    this.carregarAlunos();
+  }
+
+  carregarAlunos(){
+    this.alunoService.getAll().subscribe(
+      (alunos: Aluno[]) => { this.alunos = alunos}, //ação em caso de sucesso
+      (erro: any) => { console.error(erro); }
+    );
   }
   
   openModal(template: TemplateRef<any>) {
     this.modalRef = this.modalService.show(template);
   }
-
+  //Esses comandos foram colocados no construtor devido a erros apontados pelo comp typescript
   criarForm(){
     this.alunoForm = this.fb.group({
+      id: [''],
       nome: ['', Validators.required],
       sobrenome: ['', Validators.required],
       telefone: ['', Validators.required]
@@ -52,6 +56,30 @@ export class AlunosComponent implements OnInit {
 
   alunoSubmit(){
     console.log(this.alunoForm.value);
+    this.salvarAluno(this.alunoForm.value);
+  }
+
+  salvarAluno(aluno: Aluno){
+    console.log(aluno);
+    if(aluno.id === 0) {
+      console.log('chamou post');
+      this.alunoService.post(aluno).subscribe(
+        (retorno) => { 
+          console.log(retorno); 
+          this.carregarAlunos();
+        },
+        (erro: any) => { console.error(erro) }
+      );
+    } else {
+      console.log('chamou put');
+      this.alunoService.put(aluno.id, aluno).subscribe(
+        (retorno) => { 
+          console.log(retorno); 
+          this.carregarAlunos();
+        },
+        (erro: any) => { console.error(erro) }
+      );
+    }
   }
 
   alunoSelect(aluno: Aluno) {
@@ -59,8 +87,23 @@ export class AlunosComponent implements OnInit {
     this.alunoForm.patchValue(aluno);
   }
 
-  voltar() {
+  alunoNovo() {
     this.alunoSelecionado = new Aluno();
+    this.alunoForm.patchValue(this.alunoSelecionado);
+  }
+
+  deletarAluno(id: number) {
+    this.alunoService.delete(id).subscribe(
+      (model: any) => { 
+        console.log(model); 
+        this.carregarAlunos();
+      },
+      (erro: any) => { console.error(erro) }
+    );
+    this.voltar();
+  }
+  voltar() {
+    this.alunoSelecionado = null;
   }
 
 }

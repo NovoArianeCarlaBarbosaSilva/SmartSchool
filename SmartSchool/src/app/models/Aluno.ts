@@ -4,4 +4,11 @@ export class Aluno {
     sobrenome!: string;
     telefone!: string;
 
+    constructor() {
+        this.id = 0;
+        this.nome = '';
+        this.sobrenome = '';
+        this.telefone = '';
+        
+    }
 }
